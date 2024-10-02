@@ -1,42 +1,78 @@
+let receivedVehicleIDs = new Set();
+let firstMatch = true;
+let firstVehicleID;
+
 let map = L.map('map').setView([34.00095151499077, -118.25133692966446], 11);
 let marker;
+
+/*********************/
+/*  Leaflet Section  */
+/*********************/
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
 }).addTo(map);
 
+/*********************/
+/*   URL Parameters  */
+/*********************/
+
 let params = new URLSearchParams(window.location.search);
 let vehicleID = params.get('vehicleID');
-let firstMatch = true;
+
+/*********************/
+/*  Content Overlay  */
+/*********************/
 
 if (vehicleID) {
-    document.querySelector('h1').innerText = `Vehicle ID: ${vehicleID}`;
+    document.querySelector('#content-overlay h1').innerText = `Vehicle ID: ${vehicleID}`;
     console.log('vehicleID: ', vehicleID);
 
     let counterDiv = document.querySelector('#loadingTime');
     let counter = 0;
     counterDiv.innerText = counter;
 
+    let totalVehiclesDiv = document.querySelector('#totalVehicles');
+
     setInterval(function () {
         counter++;
         counterDiv.innerText = counter;
+        totalVehiclesDiv.innerText = receivedVehicleIDs.size;
     }, 1000);
-
+} else {
+    document.querySelector('#content-overlay h1').innerText = `No Vehicle ID provided`;
 }
 
+/*********************/
+/* WebSocket Section */
+/*********************/
+
 const socket = new WebSocket('wss://api.metro.net/ws/LACMTA/vehicle_positions');
+
 socket.addEventListener('open', (e) => {
     console.log('Connected to websocket server');
 });
+
 socket.addEventListener('message', (e) => {
     let data = JSON.parse(e.data);
+    receivedVehicleIDs.add(data.id);
+
+    if (firstVehicleID === undefined) {
+        firstVehicleID = data.id;
+    } else if (firstVehicleID === data.id) {
+        console.log('First vehicle ID reached again. Total vehicles: ', receivedVehicleIDs.size);
+    }
 
     if (data.id === vehicleID) {
         if (firstMatch) {
-            firstMatch = false,
-                document.querySelector('#content').innerText = '';
-            marker = L.marker([data.vehicle.position.latitude, data.vehicle.position.longitude]).addTo(map);
+            firstMatch = false;
+            let vehicleLatLng = [data.vehicle.position.latitude, data.vehicle.position.longitude];
+            
+            document.querySelector('#info').innerText = '';
+            marker = L.marker(vehicleLatLng).addTo(map);
+
+            map.setView(vehicleLatLng, 16);
         } else {
             marker.setLatLng([data.vehicle.position.latitude, data.vehicle.position.longitude]);
         }
@@ -46,15 +82,24 @@ socket.addEventListener('message', (e) => {
         let localTime = date.toLocaleString();
 
         console.log('Message received from server: ', data);
-        document.querySelector('#content').innerText =
+
+        let routeCode = data.route_code ? data.route_code : 'none assigned';
+        let vehicleStatus = data.vehicle.currentStatus ? data.vehicle.currentStatus : 'none';
+
+        document.querySelector('#info').innerText =
             `Vehicle ID: ${data.id}\n` +
-            `Route ID: ${data.route_code}\n` +
-            `Current Status: ${data.vehicle.currentStatus}\n` +
+            `Route ID: ${routeCode}\n` +
+            `Current Status: ${vehicleStatus}\n` +
             `Timestamp: ${localTime}\n` +
             `Coordinates: ${data.vehicle.position.latitude}, ${data.vehicle.position.longitude}\n\n`;
 
+    } else {
+        if (data.vehicle.position == null || data.vehicle.position.latitude == null || data.vehicle.position.longitude == null) {
+            console.log('No coordinates for vehicle ID: ', data.id);
+        }
     }
 });
+
 socket.addEventListener('error', (e) => {
     console.error('WebSocket error: ', error);
 });

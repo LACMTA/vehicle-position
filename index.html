@@ -14,9 +14,18 @@
         <link rel="stylesheet" href="css/styles.css">
     </head>
     <body>
-        <h1></h1>
-        <div id="map" style="height: 400px;"></div>
-        <div id="content">Waiting for vehicle data... <span id="loadingTime"></span>s</div>
+        <div id="map"></div>
+        <div id="content-overlay">
+            <h1></h1>
+            <div id="info">
+                <p>
+                    Waiting for vehicle data... <span id="loadingTime"></span>s
+                </p>
+                <p>
+                    Unique vehicleIDs received: <span id="totalVehicles"></span>
+                </p>
+            </div>
+        </div>
         
         <script src="js/script.js"></script>
     </body>
