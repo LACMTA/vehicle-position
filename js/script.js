@@ -3,7 +3,13 @@ let firstMatch = true;
 let firstVehicleID;
 let isUpdating = false;
 
-let map = L.map('map').setView([34.00095151499077, -118.25133692966446], 11);
+let map = L.map('map');
+
+map.on('load', function () {
+    document.body.style.visibility = 'visible';
+});
+
+map.setView([34.00095151499077, -118.25133692966446], 11);
 let marker;
 let line;
 
