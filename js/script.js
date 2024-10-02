@@ -1,6 +1,7 @@
 let receivedVehicleIDs = new Set();
 let firstMatch = true;
 let firstVehicleID;
+let isUpdating = false;
 
 let map = L.map('map').setView([34.00095151499077, -118.25133692966446], 11);
 let marker;
@@ -55,8 +56,15 @@ socket.addEventListener('open', (e) => {
 });
 
 socket.addEventListener('message', (e) => {
+    if (isUpdating) {
+        return;
+    }
+
+    isUpdating = true;
+
     let data = JSON.parse(e.data);
     receivedVehicleIDs.add(data.id);
+    let vehicleLatLng = [data.vehicle.position.latitude, data.vehicle.position.longitude];
 
     if (firstVehicleID === undefined) {
         firstVehicleID = data.id;
@@ -67,14 +75,14 @@ socket.addEventListener('message', (e) => {
     if (data.id === vehicleID) {
         if (firstMatch) {
             firstMatch = false;
-            let vehicleLatLng = [data.vehicle.position.latitude, data.vehicle.position.longitude];
             
             document.querySelector('#info').innerText = '';
             marker = L.marker(vehicleLatLng).addTo(map);
 
             map.setView(vehicleLatLng, 16);
         } else {
-            marker.setLatLng([data.vehicle.position.latitude, data.vehicle.position.longitude]);
+            console.log('Updating marker position to: ', vehicleLatLng);
+            marker.setLatLng(vehicleLatLng);
         }
 
         let unixTimestamp = data.vehicle.timestamp;
@@ -86,18 +94,24 @@ socket.addEventListener('message', (e) => {
         let routeCode = data.route_code ? data.route_code : 'none assigned';
         let vehicleStatus = data.vehicle.currentStatus ? data.vehicle.currentStatus : 'none';
 
+        if (vehicleStatus == 'STOPPED_AT') {
+            vehicleStatus = 'stopped';
+        } else if (vehicleStatus == 'IN_TRANSIT_TO') {
+            vehicleStatus = 'in transit';
+        }
+
         document.querySelector('#info').innerText =
-            `Vehicle ID: ${data.id}\n` +
-            `Route ID: ${routeCode}\n` +
-            `Current Status: ${vehicleStatus}\n` +
-            `Timestamp: ${localTime}\n` +
-            `Coordinates: ${data.vehicle.position.latitude}, ${data.vehicle.position.longitude}\n\n`;
+            `Route: ${routeCode}\n` +
+            `Current Status: ${vehicleStatus}\n\n` +
+            `Position Last Updated: ${localTime}\n\n`;
 
     } else {
         if (data.vehicle.position == null || data.vehicle.position.latitude == null || data.vehicle.position.longitude == null) {
             console.log('No coordinates for vehicle ID: ', data.id);
         }
     }
+
+    isUpdating = false;
 });
 
 socket.addEventListener('error', (e) => {
