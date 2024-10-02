@@ -12,17 +12,32 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
         <link rel="stylesheet" href="css/styles.css">
+
+        <script>
+            // Helper function
+            let domReady = (cb) => {
+              document.readyState === 'interactive' || document.readyState === 'complete'
+                ? cb()
+                : document.addEventListener('DOMContentLoaded', cb);
+            };
+        
+            domReady(() => {
+              // Display body when DOM is loaded
+              document.body.style.visibility = 'visible';
+            });
+          </script>
     </head>
+    
     <body>
         <div id="map"></div>
         <div id="content-overlay">
             <h1></h1>
             <div id="info">
                 <p>
-                    Waiting for vehicle data... <span id="loadingTime"></span>s
+                    Seconds passed: <span id="loadingTime">0</span>s
                 </p>
                 <p>
-                    Unique vehicleIDs received: <span id="totalVehicles"></span>
+                    <span id="totalVehicles">0</span> IDs received without finding vehicleID <span id="targetVehicleId"></span>
                 </p>
             </div>
         </div>

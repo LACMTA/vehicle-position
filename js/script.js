@@ -5,6 +5,7 @@ let isUpdating = false;
 
 let map = L.map('map').setView([34.00095151499077, -118.25133692966446], 11);
 let marker;
+let line;
 
 /*********************/
 /*  Leaflet Section  */
@@ -28,6 +29,7 @@ let vehicleID = params.get('vehicleID');
 
 if (vehicleID) {
     document.querySelector('#content-overlay h1').innerText = `Vehicle ID: ${vehicleID}`;
+    document.querySelector('#targetVehicleId').innerText = vehicleID;
     console.log('vehicleID: ', vehicleID);
 
     let counterDiv = document.querySelector('#loadingTime');
@@ -43,6 +45,7 @@ if (vehicleID) {
     }, 1000);
 } else {
     document.querySelector('#content-overlay h1').innerText = `No Vehicle ID provided`;
+    document.querySelector('#info').innerHTML = 'Please provide a vehicle ID in the URL parameters.  Example: <a href="?vehicleID=8624">?vehicleID=8624</a>';
 }
 
 /*********************/
@@ -78,11 +81,20 @@ socket.addEventListener('message', (e) => {
             
             document.querySelector('#info').innerText = '';
             marker = L.marker(vehicleLatLng).addTo(map);
+            line = L.polyline([vehicleLatLng, vehicleLatLng], {
+                color: '#0aa2c8',
+                weight: 6
+            }).addTo(map);
 
             map.setView(vehicleLatLng, 16);
         } else {
             console.log('Updating marker position to: ', vehicleLatLng);
             marker.setLatLng(vehicleLatLng);
+
+            // Update line to add another point to the polyline
+            let latlngs = line.getLatLngs();
+            latlngs.push(vehicleLatLng);
+            line.setLatLngs(latlngs);
         }
 
         let unixTimestamp = data.vehicle.timestamp;
@@ -103,7 +115,7 @@ socket.addEventListener('message', (e) => {
         document.querySelector('#info').innerText =
             `Route: ${routeCode}\n` +
             `Current Status: ${vehicleStatus}\n\n` +
-            `Position Last Updated: ${localTime}\n\n`;
+            `Position Last Updated: ${localTime}`;
 
     } else {
         if (data.vehicle.position == null || data.vehicle.position.latitude == null || data.vehicle.position.longitude == null) {

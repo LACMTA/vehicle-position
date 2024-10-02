@@ -15,11 +15,16 @@ html, body {
     position: absolute;
     bottom: 0;
     left: 0;
-    background-color: rgba(244, 246, 255, 0.727);
-    padding: 10px;
-    margin: 10px;
+    background-color: rgba(233, 251, 255, 0.678);
+    padding: 1rem 2rem 2rem 2rem;
+    margin: 1rem;
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     width: 400px;
+}
+
+p {
+    margin: 0;
+    padding: 0;
 }
