@@ -27,3 +27,10 @@ p {
     margin: 0;
     padding: 0;
 }
+
+/* If screen is tablet or smaller, reduce the font size inside the content overlay */
+@media only screen and (max-width: 768px) {
+    #content-overlay {
+        font-size: 0.6rem;
+    }
+}
