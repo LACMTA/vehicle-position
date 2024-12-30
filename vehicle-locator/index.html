@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head>
+        <!-- Basic metadata for a mobile-responsive page -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title></title>
+
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+        <link rel="stylesheet" href="css/styles.css">
+
+        <!--<script>
+            // Helper function
+            let domReady = (cb) => {
+              document.readyState === 'interactive' || document.readyState === 'complete'
+                ? cb()
+                : document.addEventListener('DOMContentLoaded', cb);
+            };
+        
+            domReady(() => {
+              // Display body when DOM is loaded
+              document.body.style.visibility = 'visible';
+            });
+          </script>-->
+    </head>
+    
+    <body style="visibility: hidden;">
+        <div id="map"></div>
+        <div id="content-overlay">
+            <h1></h1>
+            <div id="info">
+                <p>
+                    Seconds passed: <span id="loadingTime">0</span>s
+                </p>
+                <p>
+                    <span id="totalVehicles">0</span> IDs received without finding vehicleID <span id="targetVehicleId"></span>
+                </p>
+            </div>
+        </div>
+        
+        <script src="js/script.js"></script>
+    </body>
+</html>
